@@ -17,8 +17,8 @@ interface NoteDao {
     suspend fun deleteNote(id: Int)
 
     @Query("UPDATE $NOTE_TABLE SET $NOTE_TITLE=:title, $NOTE_CONTENT=:content, $DATE_RECORD =:date  WHERE $NOTE_ID=:id")
-    suspend fun updateNote(id: Int, title:String, content: String, date: LocalDateTime)
+    suspend fun updateNote(id: Int, title:String, content: String, date: String)
 
-    @Query("SELECT * FROM $NOTE_TITLE")
+    @Query("SELECT * FROM $NOTE_TABLE")
     suspend fun getNotes(): List<Note>
 }

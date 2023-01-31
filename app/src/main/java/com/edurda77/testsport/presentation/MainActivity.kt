@@ -6,16 +6,24 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
 import android.webkit.CookieManager
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Button
+import android.widget.Chronometer
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.Recycler
 import com.edurda77.testsport.R
+import com.edurda77.testsport.domain.model.Note
 import com.edurda77.testsport.utils.SAVED_SETTINGS
 import com.edurda77.testsport.utils.URL
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -24,12 +32,16 @@ class MainActivity : AppCompatActivity() {
     private val viewModel by viewModels<MainActivityViewModel>()
     private lateinit var webView: WebView
     private lateinit var errorTextView: TextView
+    private lateinit var recycler: RecyclerView
+    private lateinit var fab: FloatingActionButton
+    private lateinit var chronometer: Chronometer
+    private lateinit var startButton: Button
+    private lateinit var stopButton: Button
+    private lateinit var resetButton: Button
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        supportActionBar?.hide()
-        errorTextView = findViewById(R.id.errorTv)
-        webView = findViewById(R.id.webView)
+        initElements()
         val sharedUrl =
             this.getSharedPreferences(SAVED_SETTINGS, Context.MODE_PRIVATE).getString(URL, "")
         viewModel.getFromLocal(pathUrl = sharedUrl?: "", checkedInternetConnection())
@@ -38,25 +50,77 @@ class MainActivity : AppCompatActivity() {
                 is MaintActivityState.SuccessConnect -> {
                     webView.isVisible = true
                     errorTextView.isVisible = false
+                    recycler.isVisible = false
+                    fab.isVisible = false
+                    chronometer.isVisible = false
+                    startButton.isVisible = false
+                    stopButton.isVisible = false
+                    resetButton.isVisible = false
                     initWebView(savedInstanceState, state.remoteData.urlPath)
                 }
                 is MaintActivityState.NoInternet -> {
                     webView.isVisible = false
+                    recycler.isVisible = false
                     errorTextView.isVisible = true
+                    fab.isVisible = false
+                    chronometer.isVisible = false
+                    startButton.isVisible = false
+                    stopButton.isVisible = false
+                    resetButton.isVisible = false
                     errorTextView.text = state.message
                 }
                 is MaintActivityState.Loading -> {
-
+                    chronometer.isVisible = false
+                    fab.isVisible = false
+                    startButton.isVisible = false
+                    stopButton.isVisible = false
+                    resetButton.isVisible = false
                 }
                 is MaintActivityState.Error -> {
-
+                    chronometer.isVisible = false
+                    fab.isVisible = false
+                    startButton.isVisible = false
+                    stopButton.isVisible = false
+                    resetButton.isVisible = false
                 }
                 is MaintActivityState.NoteWork -> {
-
+                    recycler.isVisible = true
+                    webView.isVisible = false
+                    errorTextView.isVisible = false
+                    fab.isVisible = true
+                    chronometer.isVisible = true
+                    startButton.isVisible = true
+                    stopButton.isVisible = true
+                    resetButton.isVisible = true
+                    setRecycledView(state.notes)
                 }
             }
         }
+        fab.setOnClickListener {
+            val dialog = DialogAddNote()
+            val manager = supportFragmentManager
+            dialog.show(manager, "myDialog")
+        }
+        startButton.setOnClickListener {
+            chronometer.start()
+        }
 
+        stopButton.setOnClickListener {
+            chronometer.stop()
+        }
+
+        resetButton.setOnClickListener {
+            chronometer.base = SystemClock.elapsedRealtime()
+        }
+
+    }
+
+    private fun setRecycledView(notes: List<Note>) {
+        recycler.layoutManager = LinearLayoutManager(this, LinearLayoutManager
+            .VERTICAL, false)
+        val adapter = NoteAdapter()
+        adapter.submitList(notes)
+        recycler.adapter = adapter
     }
 
     private fun checkedInternetConnection() : Boolean {
@@ -125,5 +189,17 @@ class MainActivity : AppCompatActivity() {
         } else {
             super.onBackPressed()
         }
+    }
+
+    private fun initElements() {
+        supportActionBar?.hide()
+        errorTextView = findViewById(R.id.errorTv)
+        webView = findViewById(R.id.webView)
+        recycler = findViewById(R.id.noteRv)
+        fab = findViewById(R.id.fab)
+        chronometer = findViewById(R.id.chronometer)
+        startButton = findViewById(R.id.start_bt)
+        stopButton= findViewById(R.id.stop_bt)
+        resetButton = findViewById(R.id.reset_bt)
     }
 }

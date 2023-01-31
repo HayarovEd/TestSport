@@ -4,20 +4,24 @@ import com.edurda77.testsport.data.local.NoteDataBase
 import com.edurda77.testsport.data.mapper.toRemoteData
 import com.edurda77.testsport.domain.model.Note
 import com.edurda77.testsport.domain.model.RemoteData
-import com.edurda77.testsport.domain.repository.SportRepository
+import com.edurda77.testsport.domain.repository.SportLocalRepository
 import com.edurda77.testsport.utils.Resource
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
-class SportRepositoryImpl @Inject constructor(
-    private val mFirebaseRemoteConfig: FirebaseRemoteConfig,
+class SportLocalRepositoryImpl @Inject constructor(
+    //private val mFirebaseRemoteConfig: FirebaseRemoteConfig,
     db: NoteDataBase
-) : SportRepository {
+) : SportLocalRepository {
     private val dao = db.dao
 
-    override suspend fun getNotes(): List<Note> {
-        return dao.getNotes()
+    override suspend fun getNotes(): Flow<List<Note>> {
+        return flow {
+           emit (dao.getNotes())
+        }
     }
 
     override suspend fun addNote(note: Note) {
@@ -37,7 +41,7 @@ class SportRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun getConfigs(): Resource<RemoteData> {
+    /*override suspend fun getConfigs(): Resource<RemoteData> {
         val configSettings = FirebaseRemoteConfigSettings.Builder()
             .setMinimumFetchIntervalInSeconds(3600)
             .build()
@@ -59,5 +63,5 @@ class SportRepositoryImpl @Inject constructor(
             Resource.Error(e.message?: "Неизвестная ошибка")
         }
 
-    }
+    }*/
 }

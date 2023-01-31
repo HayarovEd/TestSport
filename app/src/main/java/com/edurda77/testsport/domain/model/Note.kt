@@ -13,7 +13,7 @@ data class Note(
     @ColumnInfo(name = NOTE_CONTENT)
     val content: String,
     @ColumnInfo(name = DATE_RECORD)
-    val timestamp: LocalDateTime,
+    val timestamp: String,
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = NOTE_ID)
     val id: Int

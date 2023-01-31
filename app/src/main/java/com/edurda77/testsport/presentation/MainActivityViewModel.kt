@@ -3,15 +3,23 @@ package com.edurda77.testsport.presentation
 import android.os.Build
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.viewbinding.BuildConfig
+import com.edurda77.testsport.domain.model.Note
 import com.edurda77.testsport.domain.model.RemoteData
-import com.edurda77.testsport.domain.repository.SportRepository
+import com.edurda77.testsport.domain.repository.SportLocalRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
-class MainActivityViewModel @Inject constructor(/*private val repo: SportRepository*/) : ViewModel() {
+class MainActivityViewModel @Inject constructor(private val localRepo: SportLocalRepository) :
+    ViewModel() {
     private val _showData = MutableLiveData<MaintActivityState>(MaintActivityState.Loading)
     val showData = _showData
 
@@ -19,12 +27,28 @@ class MainActivityViewModel @Inject constructor(/*private val repo: SportReposit
     fun getFromLocal(pathUrl: String = "", checkedInternetConnection: Boolean) {
         if (pathUrl != "") {
             if (checkedInternetConnection) {
-                _showData.value = MaintActivityState.SuccessConnect(remoteData = RemoteData(pathUrl))
+                _showData.value =
+                    MaintActivityState.SuccessConnect(remoteData = RemoteData(pathUrl))
             } else {
                 _showData.value = MaintActivityState.NoInternet()
             }
         } else {
-            _showData.value = MaintActivityState.SuccessConnect(remoteData = RemoteData("https://stackoverflow.com/questions/53532406/activenetworkinfo-type-is-deprecated-in-api-level-28"))
+            if (checkIsEmu()) {
+                /////
+                viewModelScope.launch {
+                    localRepo.getNotes().flowOn(Dispatchers.IO)
+                        .collect {
+                            _showData.value = MaintActivityState.NoteWork(it)
+                        }
+                }
+            } else {
+                viewModelScope.launch {
+                    localRepo.getNotes().flowOn(Dispatchers.IO)
+                        .collect {
+                            _showData.value = MaintActivityState.NoteWork(it)
+                        }
+                }
+            }
         }
     }
 
@@ -56,5 +80,11 @@ class MainActivityViewModel @Inject constructor(/*private val repo: SportReposit
         if (result) return true
         result = result or ("google_sdk" == buildProduct)
         return result
+    }
+
+    fun deleteNote(note: Note) {
+        viewModelScope.launch {
+            localRepo.deleteNote(note.id)
+        }
     }
 }

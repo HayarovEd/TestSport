@@ -58,6 +58,7 @@ dependencies {
 
     //KTX
     implementation 'androidx.activity:activity-ktx:1.5.1'
+    implementation "androidx.fragment:fragment-ktx:1.5.2"
 
     //FireBase
     implementation platform('com.google.firebase:firebase-bom:26.6.0')
@@ -65,8 +66,9 @@ dependencies {
     implementation 'com.google.firebase:firebase-analytics'
 
     //Room
-    implementation "androidx.room:room-runtime:2.5.0"
-    annotationProcessor "androidx.room:room-compiler:2.5.0"
+    implementation "androidx.room:room-runtime:2.4.3"
+    kapt "androidx.room:room-compiler:2.4.3"
+    implementation "androidx.room:room-ktx:2.4.3"
 
     //LifeCycle
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1"
