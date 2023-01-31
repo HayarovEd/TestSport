@@ -8,6 +8,6 @@ import com.edurda77.testsport.domain.model.Note
     entities = [Note::class],
     version = 1
 )
-abstract class CryptoDataBase: RoomDatabase() {
+abstract class NoteDataBase: RoomDatabase() {
     abstract val dao: NoteDao
 }
