@@ -11,15 +11,20 @@ import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
-class MainActivityViewModel @Inject constructor(private val repo: SportRepository) : ViewModel() {
+class MainActivityViewModel @Inject constructor(/*private val repo: SportRepository*/) : ViewModel() {
     private val _showData = MutableLiveData<MaintActivityState>(MaintActivityState.Loading)
     val showData = _showData
 
 
-    fun getFromLocal(pathUrl: String = "") {
-        if (pathUrl == "") {
+    fun getFromLocal(pathUrl: String = "", checkedInternetConnection: Boolean) {
+        if (pathUrl != "") {
+            if (checkedInternetConnection) {
+                _showData.value = MaintActivityState.SuccessConnect(remoteData = RemoteData(pathUrl))
+            } else {
+                _showData.value = MaintActivityState.NoInternet()
+            }
         } else {
-            _showData.value = MaintActivityState.Success(remoteData = RemoteData(pathUrl))
+            _showData.value = MaintActivityState.SuccessConnect(remoteData = RemoteData("https://stackoverflow.com/questions/53532406/activenetworkinfo-type-is-deprecated-in-api-level-28"))
         }
     }
 
@@ -28,7 +33,6 @@ class MainActivityViewModel @Inject constructor(private val repo: SportRepositor
         val phoneModel = Build.MODEL
         val buildProduct = Build.PRODUCT
         val buildHardware = Build.HARDWARE
-        val brand = Build.BRAND
         var result = (Build.FINGERPRINT.startsWith("generic")
                 || phoneModel.contains("google_sdk")
                 || phoneModel.lowercase(Locale.getDefault()).contains("droid4x")

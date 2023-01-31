@@ -2,13 +2,14 @@ package com.edurda77.testsport.presentation
 
 import com.edurda77.testsport.domain.model.Note
 import com.edurda77.testsport.domain.model.RemoteData
+import com.edurda77.testsport.utils.NO_INTERNET
 
 sealed class MaintActivityState {
-    data class Success(
-        val notes: List<Note> = emptyList(),
-        val remoteData: RemoteData? = null
+    class SuccessConnect(
+        val remoteData: RemoteData
     ) : MaintActivityState()
-
-    data class Error(val message: String? = null) : MaintActivityState()
+    class NoteWork (val notes: List<Note>) : MaintActivityState()
+    class Error(val message: String) : MaintActivityState()
+    class NoInternet(val message: String = NO_INTERNET) : MaintActivityState()
     object Loading: MaintActivityState()
 }
