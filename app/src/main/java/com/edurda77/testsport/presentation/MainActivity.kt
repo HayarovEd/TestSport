@@ -7,18 +7,19 @@ import android.net.NetworkCapabilities
 import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
+import android.telephony.TelephonyManager
 import android.webkit.CookieManager
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Button
 import android.widget.Chronometer
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.RecyclerView.Recycler
 import com.edurda77.testsport.R
 import com.edurda77.testsport.domain.model.Note
 import com.edurda77.testsport.utils.SAVED_SETTINGS
@@ -38,14 +39,22 @@ class MainActivity : AppCompatActivity() {
     private lateinit var startButton: Button
     private lateinit var stopButton: Button
     private lateinit var resetButton: Button
+    private lateinit var progress: ProgressBar
+    private lateinit var currentState: MaintActivityState
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         initElements()
-        val sharedUrl =
-            this.getSharedPreferences(SAVED_SETTINGS, Context.MODE_PRIVATE).getString(URL, "")
-        viewModel.getFromLocal(pathUrl = sharedUrl?: "", checkedInternetConnection())
-        viewModel.showData.observe(this) {state->
+        val sharedPref =
+            this.getSharedPreferences(SAVED_SETTINGS, Context.MODE_PRIVATE)
+        val sharedUrl = sharedPref.getString(URL, "")
+        currentState = MaintActivityState.Loading
+        viewModel.getFromLocal(
+            pathUrl = sharedUrl ?: "",
+            checkedInternetConnection = checkedInternetConnection(),
+            checkSim = checkSim()
+        )
+        viewModel.showData.observe(this) { state ->
             when (state) {
                 is MaintActivityState.SuccessConnect -> {
                     webView.isVisible = true
@@ -56,7 +65,12 @@ class MainActivity : AppCompatActivity() {
                     startButton.isVisible = false
                     stopButton.isVisible = false
                     resetButton.isVisible = false
+                    progress.isVisible = false
+                    currentState = state
                     initWebView(savedInstanceState, state.remoteData.urlPath)
+                    val editor = sharedPref.edit()
+                    editor.putString(URL, state.remoteData.urlPath)
+                    editor.apply()
                 }
                 is MaintActivityState.NoInternet -> {
                     webView.isVisible = false
@@ -67,21 +81,36 @@ class MainActivity : AppCompatActivity() {
                     startButton.isVisible = false
                     stopButton.isVisible = false
                     resetButton.isVisible = false
+                    progress.isVisible = false
+                    currentState = state
                     errorTextView.text = state.message
                 }
                 is MaintActivityState.Loading -> {
+                    webView.isVisible = false
+                    recycler.isVisible = false
+                    errorTextView.isVisible = true
+                    fab.isVisible = false
                     chronometer.isVisible = false
                     fab.isVisible = false
                     startButton.isVisible = false
                     stopButton.isVisible = false
                     resetButton.isVisible = false
+                    progress.isVisible = true
+                    currentState = state
                 }
                 is MaintActivityState.Error -> {
+                    webView.isVisible = false
+                    recycler.isVisible = false
+                    errorTextView.isVisible = true
+                    errorTextView.text = state.message
+                    fab.isVisible = false
                     chronometer.isVisible = false
                     fab.isVisible = false
                     startButton.isVisible = false
                     stopButton.isVisible = false
                     resetButton.isVisible = false
+                    progress.isVisible = false
+                    currentState = state
                 }
                 is MaintActivityState.NoteWork -> {
                     recycler.isVisible = true
@@ -92,6 +121,8 @@ class MainActivity : AppCompatActivity() {
                     startButton.isVisible = true
                     stopButton.isVisible = true
                     resetButton.isVisible = true
+                    progress.isVisible = false
+                    currentState = state
                     setRecycledView(state.notes)
                 }
             }
@@ -102,6 +133,7 @@ class MainActivity : AppCompatActivity() {
             dialog.show(manager, "myDialog")
         }
         startButton.setOnClickListener {
+            chronometer.base = SystemClock.elapsedRealtime()
             chronometer.start()
         }
 
@@ -187,7 +219,15 @@ class MainActivity : AppCompatActivity() {
         if (webView.canGoBack()) {
             webView.goBack()
         } else {
-            super.onBackPressed()
+            when (currentState) {
+                is MaintActivityState.SuccessConnect -> {
+
+                }
+                else -> {
+                    super.onBackPressed()
+                }
+            }
+
         }
     }
 
@@ -199,7 +239,18 @@ class MainActivity : AppCompatActivity() {
         fab = findViewById(R.id.fab)
         chronometer = findViewById(R.id.chronometer)
         startButton = findViewById(R.id.start_bt)
-        stopButton= findViewById(R.id.stop_bt)
+        stopButton = findViewById(R.id.stop_bt)
         resetButton = findViewById(R.id.reset_bt)
+        progress = findViewById(R.id.progress)
+    }
+
+    private fun checkSim(): Boolean {
+        val tm = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+        return tm.simState != TelephonyManager.SIM_STATE_ABSENT
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        webView.saveState(outState)
+        super.onSaveInstanceState(outState)
     }
 }

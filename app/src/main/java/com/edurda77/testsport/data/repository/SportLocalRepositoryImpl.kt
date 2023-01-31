@@ -1,19 +1,13 @@
 package com.edurda77.testsport.data.repository
 
 import com.edurda77.testsport.data.local.NoteDataBase
-import com.edurda77.testsport.data.mapper.toRemoteData
 import com.edurda77.testsport.domain.model.Note
-import com.edurda77.testsport.domain.model.RemoteData
 import com.edurda77.testsport.domain.repository.SportLocalRepository
-import com.edurda77.testsport.utils.Resource
-import com.google.firebase.remoteconfig.FirebaseRemoteConfig
-import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class SportLocalRepositoryImpl @Inject constructor(
-    //private val mFirebaseRemoteConfig: FirebaseRemoteConfig,
     db: NoteDataBase
 ) : SportLocalRepository {
     private val dao = db.dao

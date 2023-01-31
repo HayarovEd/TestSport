@@ -8,23 +8,26 @@ import androidx.viewbinding.BuildConfig
 import com.edurda77.testsport.domain.model.Note
 import com.edurda77.testsport.domain.model.RemoteData
 import com.edurda77.testsport.domain.repository.SportLocalRepository
+import com.edurda77.testsport.domain.repository.SportRemoteRepository
+import com.edurda77.testsport.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
-class MainActivityViewModel @Inject constructor(private val localRepo: SportLocalRepository) :
+class MainActivityViewModel @Inject constructor(
+    private val localRepo: SportLocalRepository,
+    private val sportRemoteRepository: SportRemoteRepository
+) :
     ViewModel() {
     private val _showData = MutableLiveData<MaintActivityState>(MaintActivityState.Loading)
     val showData = _showData
 
 
-    fun getFromLocal(pathUrl: String = "", checkedInternetConnection: Boolean) {
+    fun getFromLocal(pathUrl: String = "", checkedInternetConnection: Boolean, checkSim: Boolean) {
         if (pathUrl != "") {
             if (checkedInternetConnection) {
                 _showData.value =
@@ -33,20 +36,24 @@ class MainActivityViewModel @Inject constructor(private val localRepo: SportLoca
                 _showData.value = MaintActivityState.NoInternet()
             }
         } else {
-            if (checkIsEmu()) {
-                /////
-                viewModelScope.launch {
-                    localRepo.getNotes().flowOn(Dispatchers.IO)
-                        .collect {
-                            _showData.value = MaintActivityState.NoteWork(it)
-                        }
+            when (val remoteData = sportRemoteRepository.getConfigs()) {
+                is Resource.Error -> {
+                    _showData.value =
+                        MaintActivityState.Error(message = remoteData.message ?: "Unknown error")
                 }
-            } else {
-                viewModelScope.launch {
-                    localRepo.getNotes().flowOn(Dispatchers.IO)
-                        .collect {
-                            _showData.value = MaintActivityState.NoteWork(it)
+                is Resource.Success -> {
+                    val dataRemote = remoteData.data?.urlPath
+                    if (checkIsEmu() || !checkSim || dataRemote == "") {
+                        viewModelScope.launch {
+                            localRepo.getNotes().flowOn(Dispatchers.IO)
+                                .collect {
+                                    _showData.value = MaintActivityState.NoteWork(it)
+                                }
                         }
+                    } else {
+                        _showData.value =
+                            remoteData.data.let { MaintActivityState.SuccessConnect(RemoteData(dataRemote?:"")) }
+                    }
                 }
             }
         }

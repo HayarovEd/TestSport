@@ -3,7 +3,8 @@ package com.edurda77.testsport.di
 import android.app.Application
 import androidx.room.Room
 import com.edurda77.testsport.data.local.NoteDataBase
-import com.google.firebase.remoteconfig.FirebaseRemoteConfig
+import com.edurda77.testsport.data.repository.SportRemoteRepositoryImpl
+import com.edurda77.testsport.domain.repository.SportRemoteRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -16,7 +17,10 @@ object DiModule {
 
     @Provides
     @Singleton
-    fun providesRemoteService(): FirebaseRemoteConfig = FirebaseRemoteConfig.getInstance()
+    fun bindConfig(sportRemoteRepository: SportRemoteRepositoryImpl): SportRemoteRepository {
+        sportRemoteRepository.initConfigs()
+        return SportRemoteRepositoryImpl()
+    }
 
     @Provides
     @Singleton
