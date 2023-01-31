@@ -1,6 +1,9 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'com.google.gms.google-services'
+    id 'kotlin-kapt'
+    id 'dagger.hilt.android.plugin'
 }
 
 android {
@@ -13,7 +16,7 @@ android {
         targetSdk 33
         versionCode 1
         versionName "1.0"
-
+        multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -24,8 +27,13 @@ android {
         }
     }
     compileOptions {
+        coreLibraryDesugaringEnabled true
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    buildFeatures {
+        viewBinding true
     }
     kotlinOptions {
         jvmTarget = '1.8'
@@ -38,7 +46,32 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.0'
     implementation 'com.google.android.material:material:1.8.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'com.google.firebase:firebase-config-ktx:21.0.2'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.2'
+
+    //Dagger
+    implementation 'com.google.dagger:hilt-android:2.43.2'
+    annotationProcessor 'com.google.dagger:hilt-compiler:2.43.2'
+    kapt 'com.google.dagger:hilt-compiler:2.43.2'
+
+    //KTX
+    implementation 'androidx.activity:activity-ktx:1.5.1'
+    implementation "androidx.fragment:fragment-ktx:1.5.2"
+
+    //FireBase
+    implementation platform('com.google.firebase:firebase-bom:31.2.0')
+    //implementation 'com.google.firebase:firebase-config'
+    implementation 'com.google.firebase:firebase-analytics-ktx'
+
+    //Room
+    implementation "androidx.room:room-runtime:2.4.3"
+    kapt "androidx.room:room-compiler:2.4.3"
+    implementation "androidx.room:room-ktx:2.4.3"
+
+    //LifeCycle
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1"
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.5.1'
 }
