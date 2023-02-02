@@ -33,7 +33,7 @@ class SportRemoteRepositoryImpl @Inject constructor() :
 
     override fun getConfigs(): Resource<RemoteData> {
         return try {
-            Resource.Success(remoteConfig.getString("message").toRemoteData())
+            Resource.Success(remoteConfig.getString("url").toRemoteData())
         } catch (e:java.lang.Exception) {
             e.printStackTrace()
             Resource.Error(e.message?: "Unknown error")
