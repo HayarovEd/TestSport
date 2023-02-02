@@ -43,7 +43,7 @@ class MainActivityViewModel @Inject constructor(
                 }
                 is Resource.Success -> {
                     val dataRemote = remoteData.data?.urlPath
-                    if (checkIsEmu() || !checkSim || dataRemote == "") {
+                    if (checkIsEmu() || /*!checkSim ||*/ dataRemote == "") {
                         viewModelScope.launch {
                             localRepo.getNotes().flowOn(Dispatchers.IO)
                                 .collect {
