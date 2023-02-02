@@ -1,33 +1,33 @@
 {
   "project_info": {
-    "project_number": "174799647799",
-    "project_id": "test-web-sport",
-    "storage_bucket": "test-web-sport.appspot.com"
+    "project_number": "1002791873302",
+    "project_id": "stavr32-b5b26",
+    "storage_bucket": "stavr32-b5b26.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:174799647799:android:35d75ae732d13737bafbb2",
+        "mobilesdk_app_id": "1:1002791873302:android:e3738d820638244997be37",
         "android_client_info": {
-          "package_name": "com.edurda77.testsport"
+          "package_name": "timer.xstavka"
         }
       },
       "oauth_client": [
         {
-          "client_id": "174799647799-ar9soihs6om17b17bqaes8a8qvepq7ai.apps.googleusercontent.com",
+          "client_id": "1002791873302-en0j7jpfsocous6e6r16cke2ebifuseq.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBJefjgjGUvhjykBAL8OoaXVnPlIxOyJoc"
+          "current_key": "AIzaSyCwAtN3epe_Hd0a1Z1CHIg2DJTGfS8354M"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "174799647799-ar9soihs6om17b17bqaes8a8qvepq7ai.apps.googleusercontent.com",
+              "client_id": "1002791873302-en0j7jpfsocous6e6r16cke2ebifuseq.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

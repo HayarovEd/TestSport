@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace 'com.edurda77.testsport'
+    namespace 'timer.xstavka'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.edurda77.testsport"
+        applicationId "timer.xstavka"
         minSdk 21
         targetSdk 33
         versionCode 1

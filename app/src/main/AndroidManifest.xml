@@ -5,7 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:name=".AppTestSport"
+        android:name="timer.xstavka.AppTestSport"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -15,10 +15,10 @@
         android:theme="@style/Theme.TestSport"
         tools:targetApi="31">
         <activity
-            android:name=".presentation.MainActivity"
+            android:name="timer.xstavka.presentation.MainActivity"
             android:exported="false" />
         <activity
-            android:name=".presentation.SplashActivity"
+            android:name="timer.xstavka.presentation.SplashActivity"
             android:exported="true"
             android:usesCleartextTraffic="true">
             <intent-filter>
