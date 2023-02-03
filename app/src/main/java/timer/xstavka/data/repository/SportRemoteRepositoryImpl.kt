@@ -22,7 +22,8 @@ class SportRemoteRepositoryImpl @Inject constructor() :
         remoteConfig.fetchAndActivate()
             .addOnCompleteListener {
                 if (it.isSuccessful) {
-                    Resource.Success(it.result)
+                    Resource.Success(remoteConfig.getString("url").toRemoteData())
+                    //Resource.Success(it.result)
                 } else {
                     Resource.Error(it.result.toString())
                 }

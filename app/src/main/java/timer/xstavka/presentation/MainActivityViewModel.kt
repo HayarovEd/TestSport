@@ -5,27 +5,27 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.viewbinding.BuildConfig
-import timer.xstavka.domain.model.Note
-import timer.xstavka.domain.model.RemoteData
-import timer.xstavka.domain.repository.SportLocalRepository
-import timer.xstavka.domain.repository.SportRemoteRepository
-import timer.xstavka.utils.Resource
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.remoteconfig.ktx.remoteConfig
+import com.google.firebase.remoteconfig.ktx.remoteConfigSettings
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
+import timer.xstavka.domain.model.Note
+import timer.xstavka.domain.model.RemoteData
+import timer.xstavka.domain.repository.SportLocalRepository
 import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
 class MainActivityViewModel @Inject constructor(
     private val localRepo: SportLocalRepository,
-    private val sportRemoteRepository: SportRemoteRepository
 ) :
     ViewModel() {
     private val _showData = MutableLiveData<MaintActivityState>(MaintActivityState.Loading)
     val showData = _showData
-
+    private val remoteConfig = Firebase.remoteConfig
 
     fun getFromLocal(pathUrl: String = "", checkedInternetConnection: Boolean, checkSim: Boolean) {
         if (pathUrl != "") {
@@ -36,14 +36,40 @@ class MainActivityViewModel @Inject constructor(
                 _showData.value = MaintActivityState.NoInternet()
             }
         } else {
-            when (val remoteData = sportRemoteRepository.getConfigs()) {
-                is Resource.Error -> {
+            val configSettings = remoteConfigSettings {
+                minimumFetchIntervalInSeconds = 3600
+            }
+            remoteConfig.setConfigSettingsAsync(configSettings)
+            remoteConfig.fetchAndActivate()
+                .addOnCompleteListener {
+                    if (it.isSuccessful) {
+                        val resultUrl = remoteConfig.getString("url")
+                        if (checkIsEmu() || resultUrl == "") {
+                            viewModelScope.launch {
+                                localRepo.getNotes().flowOn(Dispatchers.IO)
+                                    .collect {
+                                        _showData.value = MaintActivityState.NoteWork(it)
+                                    }
+                            }
+                        } else {
+                            _showData.value = MaintActivityState.SuccessConnect(RemoteData(urlPath = resultUrl))
+
+                        }
+                    } else {
+                        MaintActivityState.Error(message = it.result.toString())
+                    }
+                }.addOnFailureListener {
                     _showData.value =
-                        MaintActivityState.Error(message = remoteData.message ?: "Unknown error")
+                        MaintActivityState.Error(message = it.message ?: "Unknown error")
                 }
-                is Resource.Success -> {
-                    val dataRemote = remoteData.data?.urlPath
-                    if (checkIsEmu() || /*!checkSim ||*/ dataRemote == "") {
+            /* when (val remoteData = sportRemoteRepository.initConfigs()) {
+                 is Resource.Error -> {
+                     _showData.value =
+                         MaintActivityState.Error(message = remoteData.message ?: "Unknown error")
+                 }
+                 is Resource.Success -> {
+                     val dataRemote = remoteData.data!!.urlPath
+                     if (checkIsEmu() || *//*!checkSim ||*//* dataRemote == "") {
                         viewModelScope.launch {
                             localRepo.getNotes().flowOn(Dispatchers.IO)
                                 .collect {
@@ -55,13 +81,13 @@ class MainActivityViewModel @Inject constructor(
                             remoteData.data.let {
                                 MaintActivityState.SuccessConnect(
                                     RemoteData(
-                                        dataRemote ?: ""
+                                        dataRemote
                                     )
                                 )
                             }
                     }
                 }
-            }
+            }*/
         }
     }
 

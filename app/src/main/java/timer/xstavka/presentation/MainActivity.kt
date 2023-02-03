@@ -57,6 +57,9 @@ class MainActivity : AppCompatActivity() {
         viewModel.showData.observe(this) { state ->
             when (state) {
                 is MaintActivityState.SuccessConnect -> {
+                    val editor = sharedPref.edit()
+                    editor.putString(URL, state.remoteData.urlPath)
+                    editor.apply()
                     webView.isVisible = true
                     errorTextView.isVisible = false
                     recycler.isVisible = false
@@ -68,9 +71,6 @@ class MainActivity : AppCompatActivity() {
                     progress.isVisible = false
                     currentState = state
                     initWebView(savedInstanceState, state.remoteData.urlPath)
-                    val editor = sharedPref.edit()
-                    editor.putString(URL, state.remoteData.urlPath)
-                    editor.apply()
                 }
                 is MaintActivityState.NoInternet -> {
                     webView.isVisible = false
